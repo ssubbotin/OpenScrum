@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<scrumdesk>
+	<sprint_name>{{ sprint }}</sprint_name>
+	<read_only>{{ read_only }}</read_only>
+	<version>{{ version }}</version>{% for task in tasks %}{% if not task.deleted %}
+	<notes>
+		<id>{{ task.key }}</id>
+		<us_num>{{ task.us_num }}</us_num>
+		<us_time>{{ task.us_time }}</us_time>
+		<us_text>{{ task.us_text|escape }}</us_text>
+		<quad>{{ task.pos_quad }}</quad>
+		<x>{{ task.pos_x }}</x>
+		<y>{{ task.pos_y }}</y>
+		<color>{{ task.color }}</color>
+		<inwork>{{ task.calculate_worked_days }}</inwork>{% for assigned in task.taskassignedteammember_set %}
+			<assigned>
+				<name>{{ assigned.pref_name }}</name>
+				<color>{{ assigned.pref_color }}</color>
+                <reviewer>{{ assigned.reviewer }}</reviewer>
+			</assigned>{% endfor %}
+	</notes>{% endif %}{% endfor %}
+</scrumdesk>

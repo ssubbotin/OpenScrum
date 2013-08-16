@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}User profile: {{ user.nickname|escape }}{% endblock %}
+
+{% block head %}
+{% endblock %}
+
+{% block body %}
+  <h1>User: {{ user.nickname|escape }}</h1>
+  <p>auth_domain: {{ user.auth_domain|escape }}</p>
+  <p>email: {{ user.email|escape }}</p>
+  <p>federated_identity: {{ user.federated_identity|escape }}</p>
+  <p>federated_provider: {{ user.federated_provider|escape }}</p>
+  <p>user_id: {{ user.user_id|escape }}</p>
+{% endblock %}

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<openscrum>{% for hist in history %}
+	<history>
+		<time>{{ hist.time }}</time>
+		<task_id>{{ hist.task.key }}</task_id>
+		<task_us_num>{{ hist.task.us_num }}</task_us_num>
+		<task_us_time>{{ hist.task.us_time }}</task_us_time>
+		<task_us_text>{{ hist.task.us_text|escape }}</task_us_text>
+		<value>{{ hist.value|escape }}</value>
+		<user>{{ hist.user.nickname }}</user>
+		<assignee>{% for assigned in hist.task.taskassignedteammember_set %}{{ assigned.pref_name }}, {% endfor %}</assignee>
+	</history>{% endfor %}
+</openscrum>

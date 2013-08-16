@@ -1,0 +1,141 @@
+
+<model xmlns="http://ns.adobe.com/Fiber/1.0">
+  <annotation name="ActionScriptGeneration">
+    <item name="FullyQualifyReferences">true</item>
+  </annotation>
+  <service name="AppspotServer">
+    <annotation name="ActionScriptGeneration">
+      <item name="ServiceType">HTTPMultiService</item>
+      <item name="Package">services.appspotserver</item>
+      <item name="rootURL"></item>
+    </annotation>
+    <annotation name="ServiceTypeGroup">
+      <item name="ServiceBackendType">HTTPService</item>
+    </annotation>
+    <annotation name="ServiceConfig">
+      <item name="DEFAULT_ENTITY_PACKAGE">valueObjects</item>
+      <item name="LINKED_FILE"></item>
+    </annotation>
+    <function name="getSprintHistory" return-type="SprintHistory[]">
+      <annotation name="analyze group">
+        <item name="analyzed">true</item>
+      </annotation>
+      <annotation name="ActionScriptGeneration">
+        <item name="SerializationFilter">com.adobe.serializers.xml.XMLSerializationFilter</item>
+        <item name="method">GET</item>
+        <item name="url">http://localhost:8080/getsprinthistory</item>
+      </annotation>
+      <annotation name="url group">
+        <item name="completeURL">http://localhost:8080/getsprinthistory</item>
+      </annotation>
+      <annotation name="ValidProperties">
+        <item name="propertySpecifier">time,task_us_num,task_us_text,action,value,user</item>
+      </annotation>
+      <annotation name="Properties">
+        <item name="xPath">/::history</item>
+      </annotation>
+      <annotation name="original signature">
+        <item name="returnType">opaque</item>
+        <item name="inputParamNames">sprint_id</item>
+        <item name="inputParams">string</item>
+      </annotation>
+      <parameter name="sprint_id" type="string"/>
+    </function>
+    <function name="getTaskHistory" return-type="SprintHistory[]">
+      <annotation name="analyze group">
+        <item name="analyzed">true</item>
+      </annotation>
+      <annotation name="ActionScriptGeneration">
+        <item name="SerializationFilter">com.adobe.serializers.xml.XMLSerializationFilter</item>
+        <item name="method">GET</item>
+        <item name="url">http://localhost:8080/gettaskhistory</item>
+      </annotation>
+      <annotation name="url group">
+        <item name="completeURL">http://localhost:8080/gettaskhistory</item>
+      </annotation>
+      <annotation name="ValidProperties">
+        <item name="propertySpecifier">time,task_us_num,task_us_text,action,value,user</item>
+      </annotation>
+      <annotation name="Properties">
+        <item name="xPath">/::history</item>
+      </annotation>
+      <annotation name="original signature">
+        <item name="returnType">opaque</item>
+        <item name="inputParamNames">task_id</item>
+        <item name="inputParams">string</item>
+      </annotation>
+      <parameter name="task_id" type="string"/>
+    </function>
+    <function name="getBurnDown" return-type="Burndown[]">
+      <annotation name="analyze group">
+        <item name="analyzed">true</item>
+      </annotation>
+      <annotation name="ActionScriptGeneration">
+        <item name="SerializationFilter">com.adobe.serializers.xml.XMLSerializationFilter</item>
+        <item name="method">GET</item>
+        <item name="url">http://localhost:8080/getburndown</item>
+      </annotation>
+      <annotation name="url group">
+        <item name="completeURL">http://localhost:8080/getburndown</item>
+      </annotation>
+      <annotation name="ValidProperties">
+        <item name="propertySpecifier">date,above,below</item>
+      </annotation>
+      <annotation name="Properties">
+        <item name="xPath">/::burndown</item>
+      </annotation>
+      <annotation name="original signature">
+        <item name="returnType">opaque</item>
+        <item name="inputParamNames">sprint_id</item>
+        <item name="inputParams">string</item>
+      </annotation>
+      <parameter name="sprint_id" type="string"/>
+    </function>
+  </service>
+  <entity name="Burndown">
+    <annotation name="EntityProperties">
+      <item name="EntityOriginalName">Burndown</item>
+    </annotation>
+    <annotation name="service Group">
+      <item name="service">AppspotServer</item>
+    </annotation>
+    <annotation name="ServerProperties">
+      <item name="IncludeRemoteClass">nonempty</item>
+    </annotation>
+    <annotation name="getBurnDown">
+      <item name="propertySpecifier">date,above,below</item>
+    </annotation>
+    <annotation name="ActionScriptGeneration">
+      <item name="Package">valueObjects</item>
+    </annotation>
+    <property name="date" type="string" required="true"/>
+    <property name="above" type="string" required="true"/>
+    <property name="below" type="string" required="true"/>
+  </entity>
+  <entity name="SprintHistory">
+    <annotation name="EntityProperties">
+      <item name="EntityOriginalName">History</item>
+    </annotation>
+    <annotation name="service Group">
+      <item name="service">AppspotServer</item>
+    </annotation>
+    <annotation name="ServerProperties">
+      <item name="IncludeRemoteClass">nonempty</item>
+    </annotation>
+    <annotation name="getSprintHistory">
+      <item name="propertySpecifier">time,task_us_num,task_us_text,action,value,user</item>
+    </annotation>
+    <annotation name="ActionScriptGeneration">
+      <item name="Package">valueObjects</item>
+    </annotation>
+    <annotation name="getTaskHistory">
+      <item name="propertySpecifier">time,task_us_num,task_us_text,action,value,user</item>
+    </annotation>
+    <property name="time" type="string" required="true"/>
+    <property name="task_us_num" type="string" required="true"/>
+    <property name="task_us_text" type="string" required="true"/>
+    <property name="action" type="string" required="true"/>
+    <property name="value" type="string" required="true"/>
+    <property name="user" type="string" required="true"/>
+  </entity>
+</model>

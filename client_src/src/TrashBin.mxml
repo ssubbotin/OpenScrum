@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" width="64" height="64"
+		 creationComplete="creationCompleteHandler(event)">
+	<s:layout>
+		<s:HorizontalLayout/>
+	</s:layout>
+	<fx:Script>
+		<![CDATA[
+			import mx.controls.Alert;
+			import mx.core.DragSource;
+			import mx.core.FlexGlobals;
+			import mx.core.IUIComponent;
+			import mx.events.CloseEvent;
+			import mx.events.DragEvent;
+			import mx.events.FlexEvent;
+			import mx.managers.DragManager;
+			import mx.rpc.events.ResultEvent;
+			
+			protected function dragEnterHandler(event:DragEvent):void
+			{
+				if (event.dragSource.hasFormat('personName')) {
+					var wasDocked:Boolean = event.dragSource.dataForFormat('personDocked') as Boolean;
+					if(!wasDocked) {
+						DragManager.acceptDragDrop(event.currentTarget as IUIComponent);
+					}
+				}
+				if (event.dragSource.hasFormat('noteItself')) {
+					DragManager.acceptDragDrop(event.currentTarget as IUIComponent);
+				}
+			}
+
+			private var note:StickyNote; 
+			
+			protected function dragDropHandler(event:DragEvent):void
+			{
+				if (event.dragSource.hasFormat('personName')) {
+					var person:StickyPerson = event.dragSource.dataForFormat('personItself') as StickyPerson;					
+					var parentGroup:Group = person.parent as Group;
+					parentGroup.removeElement(person);
+					
+					personColor = person.background;
+					personName = person.person;
+					noteID = person.parentNoteID;
+					deleteperson.send();
+				}
+				if (event.dragSource.hasFormat('noteItself')) {
+					note = event.dragSource.dataForFormat('noteItself') as StickyNote;
+
+					Alert.yesLabel = "Да";
+					Alert.noLabel = "Нет";
+					Alert.show("Вы уверены что хотите удалить эту задачу?", "Удаление задачи", 3, note.parentApplication as Sprite, alertPersonHandler);
+				}
+			}
+			
+			private function alertPersonHandler(event:CloseEvent):void {
+				if (event.detail==Alert.YES) {
+					var parentGroup:Group = note.parent as Group;
+					parentGroup.removeElement(note);
+					noteID = note.noteID;
+					deletetask.send();
+				}
+			}
+
+			protected function deletetask_resultHandler(event:ResultEvent):void
+			{
+				var result:Object = deletetask.lastResult;
+			}
+
+
+			protected function creationCompleteHandler(event:FlexEvent):void
+			{
+				serverURL = FlexGlobals.topLevelApplication.parameters["serverURL"] as String;
+			}
+
+
+			protected function deleteperson_resultHandler(event:ResultEvent):void
+			{
+				var result:Object = deleteperson.lastResult;
+			}
+
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- Разместить невизуальные элементы (например, службы или объекты значений) -->
+		<fx:String id="noteID">0</fx:String>
+		<fx:String id="personName">Без имени</fx:String>
+		<fx:int id="personColor">0</fx:int>
+		<fx:String id="serverURL">http://localhost</fx:String>
+		
+		<mx:HTTPService id="deletetask" url="{serverURL + '/deletetask.php'}" method="POST" result="deletetask_resultHandler(event)">
+			<mx:request xmlns=""> 
+				<id>{noteID}</id> 
+			</mx:request>    			
+		</mx:HTTPService>
+		
+		<mx:HTTPService id="deleteperson" url="{serverURL + '/deleteperson.php'}" method="POST" result="deleteperson_resultHandler(event)">
+			<mx:request xmlns=""> 
+				<id>{noteID}</id> 
+				<name>{personName}</name> 
+				<color>{personColor}</color> 
+			</mx:request>    			
+		</mx:HTTPService>
+	</fx:Declarations>
+	<mx:Image source="@Embed('/assets/trash_icon.png')" dragEnter="dragEnterHandler(event)" dragDrop="dragDropHandler(event)"/>
+</s:Group>

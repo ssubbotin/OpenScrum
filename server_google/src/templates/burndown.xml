@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<openscrum>{% for item in data %}
+	<burndown>
+		<date>{{ item.date }}</date>
+		<above>{{ item.left_value }}</above>
+		<below>{{ item.added_value }}</below>
+	</burndown>{% endfor %}
+</openscrum>

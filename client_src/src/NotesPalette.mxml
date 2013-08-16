@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" width="220" height="20" xmlns:ns1="*">
+	<s:layout>
+		<s:HorizontalLayout/>
+	</s:layout>
+	<fx:Declarations>
+		<!-- Разместить невизуальные элементы (например, службы или объекты значений) -->
+	</fx:Declarations>
+	<s:Label text="новые задачи: " height="100%" verticalAlign="middle"/>
+	<s:HGroup gap="-20">
+		<ns1:StickyNote rotation="-45" scaleX=".2" scaleY=".2" color="#b7fa57" isDocked="true"/>
+		<ns1:StickyNote rotation="-45" scaleX=".2" scaleY=".2" isDocked="true"/>
+		<ns1:StickyNote rotation="-45" scaleX=".2" scaleY=".2" color="#82BDFF" isDocked="true"/>
+		<ns1:StickyNote rotation="-45" scaleX=".2" scaleY=".2" color="#EE3939" isDocked="true"/>
+		<ns1:StickyNote rotation="-45" scaleX=".2" scaleY=".2" color="#F5AD49" isDocked="true"/>
+		<ns1:StickyNote rotation="-45" scaleX=".2" scaleY=".2" color="#49F5F5" isDocked="true"/>
+	</s:HGroup>
+</s:Group>

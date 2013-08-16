@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" 
+			   xmlns:mx="library://ns.adobe.com/flex/mx"
+			   width="600" height="600"
+			   title="Sprint settings"
+			   close="PopUpManager.removePopUp(this);">
+	<s:layout>
+		<s:VerticalLayout/>
+	</s:layout>
+		
+	<fx:Script>
+		<![CDATA[
+			import mx.controls.Alert;
+			import mx.core.FlexGlobals;
+			import mx.events.CalendarLayoutChangeEvent;
+			import mx.events.FlexEvent;
+			import mx.managers.PopUpManager;			
+			
+			protected function startDateChanged(date:Date):void
+			{
+			}
+
+			protected function endDateChanged(date:Date):void
+			{
+			}
+			
+			protected function spLen_changeHandler(event:Event):void
+			{
+			}			
+					
+			protected function dataTip(val:Number):String {
+				if(val < 55) {
+					val = val + 5;
+					return val.toString() + " seconds"
+				}
+				val = val - 50;
+				val = val / 5;
+				if(val == 1) {
+					return val.toString() + " minute"
+				}
+				return val.toString() + " minutes"
+			}
+	
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	
+	<mx:Spacer height="20"/>
+	<s:HGroup width="100%" paddingRight="20">
+		<mx:Label text="Название спринта: " width="150" textAlign="right"/>
+		<mx:TextInput id="spName" width="100%" text="{FlexGlobals.topLevelApplication.sprint_name}"/>
+	</s:HGroup>
+	<s:HGroup width="100%" paddingRight="20">
+		<mx:Label text="Цель спринта: " width="150" textAlign="right"/>
+		<mx:TextInput id="spTarget" width="100%" height="50" text="Бороться и искать найти и перепрятать"/>
+	</s:HGroup>
+	<s:HGroup width="100%" paddingRight="20">
+		<mx:Label text="Начало спринта: " width="150" textAlign="right"/>
+		<mx:DateField id="spStart" yearNavigationEnabled="true"  change="startDateChanged(DateField(event.target).selectedDate)" color="0x000000"/>
+	</s:HGroup>
+	<s:HGroup width="100%" paddingRight="20">
+		<mx:Label text="Конец спринта: " width="150" textAlign="right"/>
+		<mx:DateField id="spEnd" yearNavigationEnabled="true"  change="endDateChanged(DateField(event.target).selectedDate)" color="0x000000"/>
+	</s:HGroup>
+	<s:HGroup width="100%" paddingRight="20">
+		<mx:Label text="Длительность спринта: " width="150" textAlign="right"/>
+		<s:NumericStepper id="spLen" maximum="60" value="15" stepSize="1" change="spLen_changeHandler(event)"/>
+	</s:HGroup>
+	<s:HGroup width="100%" paddingRight="20">
+		<mx:Label text="Укажите выходные: " width="150" textAlign="right"/>
+		<s:TileGroup width="100%" height="200" requestedColumnCount="8">
+			<mx:Label text="Пн"/>
+			<mx:Label text="Вт"/>
+			<mx:Label text="Ср"/>
+			<mx:Label text="Чт"/>
+			<mx:Label text="Пт"/>
+			<mx:Label text="Сб"/>
+			<mx:Label text="Вс"/>
+			<mx:Label text="Месяц"/>
+			<mx:Label text="11"/>
+			<mx:Label text="12"/>
+			<mx:Label text="13"/>
+			<mx:Label text=""/>
+			<mx:Label text=""/>
+			<mx:Label text=""/>
+			<mx:Label text=""/>
+			<mx:Label text="Июль"/>
+		</s:TileGroup>
+	</s:HGroup>
+	<s:HGroup width="100%" paddingRight="20">
+		<mx:Label text="Автообновление: " width="150" textAlign="right"/>
+		<s:VGroup width="100%">
+			<s:HGroup width="100%" height="20">
+				<s:Label width="60" paddingTop="5" text="Включено: " textAlign="right"/>
+				<s:CheckBox selected="true"/>
+			</s:HGroup>
+			<s:HGroup width="100%" height="20" paddingTop="5">
+				<s:Label width="60" text="Интервал: " textAlign="right"/>
+				<s:HSlider id="delayValue" width="100%" maximum="100" minimum="0" stepSize="5" value="55" dataTipFormatFunction="dataTip"/>
+			</s:HGroup>
+			<s:HGroup width="100%" height="20" paddingTop="5">
+				<s:Label width="60"/>
+				<s:Label text="{dataTip(delayValue.value)}"/>
+			</s:HGroup>
+		</s:VGroup>		
+	</s:HGroup>
+</s:TitleWindow>

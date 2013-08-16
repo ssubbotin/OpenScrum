@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx"
+		 xmlns:local="*"
+		 width="{showLeft?800:799}" height="{showTop?820:819}"
+		 creationComplete="desk_creationCompleteHandler(event)">
+	<s:layout>
+		<s:VerticalLayout gap="0"/>
+	</s:layout>
+	<fx:Script>
+		<![CDATA[
+			import flash.geom.Point;
+			import flash.profiler.showRedrawRegions;
+			
+			import flashx.textLayout.formats.Float;
+			
+			import mx.containers.TitleWindow;
+			import mx.controls.Image;
+			import mx.core.DragSource;
+			import mx.core.FlexGlobals;
+			import mx.core.IUIComponent;
+			import mx.events.DragEvent;
+			import mx.events.FlexEvent;
+			import mx.managers.DragManager;
+			import mx.managers.PopUpManager;
+			import mx.rpc.events.ResultEvent;
+			
+			//import org.osmf.image.ImageLoader;
+
+			protected function dragEnterHandler(event:DragEvent):void
+			{
+				if(!FlexGlobals.topLevelApplication.read_only) {
+					if (event.dragSource.hasFormat('noteColor')) {
+						DragManager.acceptDragDrop(event.currentTarget as IUIComponent);
+					}
+					if (event.dragSource.hasFormat('noteItself')) {
+						var note:StickyNote= event.dragSource.dataForFormat('noteItself') as StickyNote;
+						var parentGroup:Group = note.parent as Group; 
+						var quad:DeskQuadrant = parentGroup.parentDocument as DeskQuadrant;
+						if(quad != this) {
+							DragManager.acceptDragDrop(event.currentTarget as IUIComponent);
+						}				
+					}
+				}
+			}
+			
+			protected function dragDropHandler(event:DragEvent):void
+			{			
+				if (event.dragSource.hasFormat('noteColor')) {
+					var sp:StickyNote = new StickyNote();
+					sp.color = event.dragSource.dataForFormat('noteColor') as uint;
+					sp.x = event.localX>600?600:event.localX;
+					sp.y = event.localY>600?600:event.localY;
+					sp.quadId = quadId;
+					sp.serverURL = FlexGlobals.topLevelApplication.parameters["serverURL"];
+					sp.sprintID = FlexGlobals.topLevelApplication.parameters["sprintID"];
+					notesDock.addElement(sp);
+					sp.sendCreationEvent();
+				}
+				if (event.dragSource.hasFormat('noteItself')) {
+					var note:StickyNote= event.dragSource.dataForFormat('noteItself') as StickyNote;
+					var parentGroup:Group = note.parent as Group;
+					parentGroup.removeElement(note);
+					note.x = event.localX>600?600:event.localX;
+					note.y = event.localY>600?600:event.localY;
+					notesDock.addElement(note);
+					note.initmm(quadId);
+				}
+			}
+			
+			protected function calcComplexity():void {
+				var complexity:Number = 0;
+				var count:Number = 0;
+				for(var i:int=0; i<notesDock.numElements; i++) {
+					if(notesDock.getElementAt(i) is StickyNote) {
+						var note:StickyNote = notesDock.getElementAt(i) as StickyNote;
+						if(note.color != 0xb7fa57) {
+							var days:String = note.usDays;
+							days = days.replace(/,/g,".");
+							complexity = complexity + parseFloat(days);
+							count = count + 1;
+						}
+					}
+				}
+				sum.text = "tasks: " + count.toFixed(0) + ", sum: " + complexity.toFixed(1);
+			}
+			
+
+			protected function bordercontainer1_mouseDownHandler(event:MouseEvent):void
+			{
+				calcComplexity();
+			}
+
+            [Embed(source="/assets/val.jpg")]
+			private var bgVal:Class;
+			
+			[Embed(source="/assets/camuf.jpg")]
+			private var bgCamuf:Class;
+			
+			private var dateTimer:Timer = new Timer(60*1000);
+			
+			protected function desk_creationCompleteHandler(event:FlexEvent):void
+			{
+				dateTimer.addEventListener(TimerEvent.TIMER, timeListener);
+				dateTimer.start();
+				timeListener(null);
+			}
+			
+			private function timeListener(e:Event):void
+			{
+				var currentDate:Date = new Date();
+				if((currentDate.month == 1) && (Math.abs(currentDate.date - 14) < 2)) {
+					notesDock.setStyle("backgroundImage", bgVal);
+				}
+				if((currentDate.month == 1) && (Math.abs(currentDate.date - 23) < 2)) {
+					notesDock.setStyle("backgroundImage", bgCamuf);
+				}
+			}
+
+		]]>
+	</fx:Script>
+	<s:states>
+		<s:State name="State1"/>
+	</s:states>
+	<fx:Declarations>
+		<!-- Разместить невизуальные элементы (например, службы или объекты значений) -->
+		<fx:String id="topCategory">Имя категории не задано</fx:String>
+		<fx:String id="leftCategory">Имя категории не задано</fx:String>
+		<fx:Boolean id="showTop">false</fx:Boolean>
+		<fx:Boolean id="showLeft">false</fx:Boolean>
+		<fx:int id="quadId">0</fx:int>			
+	</fx:Declarations>
+
+	<mx:Spacer height="{showTop?20:0}" alpha="0.5"/>
+	<s:HGroup width="100%" gap="0" height="{showTop?50:0}" visible="{showTop}">
+		<mx:Spacer width="{showLeft?50:0}" height="100%"/>
+		<mx:VRule height="100%" width="{showTop?1:0}"/>
+		<s:Label text="{topCategory}" fontSize="16" width="100%" textAlign="center" height="100%" fontWeight="bold" verticalAlign="middle"/>
+		<mx:VRule height="100%" width="{showTop?1:0}"/>		
+	</s:HGroup>
+	<mx:HRule width="100%" height="1"/>
+	
+	<s:HGroup height="100%" gap="0" width="100%">
+		<s:Group visible="{showLeft}" height="100%" width="{showLeft?50:0}">
+			<s:Label text="{leftCategory}" fontSize="16" textAlign="center" fontWeight="bold" verticalAlign="middle" height="100%" width="100%" rotation="-90" y="500"/>
+		</s:Group>
+		<mx:VRule height="100%" width="{showLeft?1:0}"/>
+		<s:BorderContainer id="notesDock"
+						   width="100%" height="100%" dragEnter="dragEnterHandler(event)" 
+						   dragDrop="dragDropHandler(event)"
+						   backgroundImageFillMode="scale">
+			<s:BorderContainer width="{notesDock.width}" depth="1" left="0" height="20" bottom="0"  right="0" borderVisible="false" backgroundAlpha="0.5" mouseDown="bordercontainer1_mouseDownHandler(event)">
+				<s:HGroup width="{notesDock.width}" height="20" bottom="0" fontWeight="normal" x="0" horizontalAlign="right">
+					<s:Label id="sum" text="click me" verticalAlign="top" paddingTop="5" paddingRight="5"/>
+				</s:HGroup>
+		    </s:BorderContainer>			
+		</s:BorderContainer>
+	</s:HGroup>
+</s:Group>

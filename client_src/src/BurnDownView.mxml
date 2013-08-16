@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" 
+			   xmlns:mx="library://ns.adobe.com/flex/mx"
+			   title="Burndown chart"
+			   close="PopUpManager.removePopUp(this);"
+			   width="600" height="400"
+			   xmlns:appspotserver="services.appspotserver.*">
+	
+	<fx:Script>
+		<![CDATA[
+			import mx.controls.Alert;
+			import mx.core.FlexGlobals;
+			import mx.events.FlexEvent;
+			import mx.managers.PopUpManager;
+			
+			protected function linechart_creationCompleteHandler(event:FlexEvent):void
+			{
+				var sprintID:String = FlexGlobals.topLevelApplication.parameters["sprintID"] as String;
+				getBurnDownResult.token = appspotServer.getBurnDown(sprintID);
+			}
+			
+		]]>
+	</fx:Script>
+
+	<fx:Declarations>
+		<s:CallResponder id="getBurnDownResult"/>
+		<appspotserver:AppspotServer id="appspotServer" fault="Alert.show(event.fault.faultString + '\n' + event.fault.faultDetail)" showBusyCursor="true"/>
+		<!-- Разместить невизуальные элементы (например, службы или объекты значений) -->
+	</fx:Declarations>
+	<mx:LineChart x="0" y="0" id="linechart" width="100%" height="100%" creationComplete="linechart_creationCompleteHandler(event)" dataProvider="{getBurnDownResult.lastResult}" showDataTips="true">
+		<mx:series>
+			<mx:LineSeries displayName="Сверху" yField="above" id="lineSeries" xField="date"/>
+			<mx:LineSeries displayName="Снизу" yField="below" id="lineSeries2" xField="date"/>
+		</mx:series>
+		<mx:horizontalAxis>
+			<mx:CategoryAxis id="categoryAxis" categoryField="date"/>
+		</mx:horizontalAxis>
+	</mx:LineChart>
+</s:TitleWindow>

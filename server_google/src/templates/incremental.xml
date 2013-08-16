@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<openscrum>{% for hist in history %}
+	<history>
+		<task_us_num>{{ hist.task.key }}</task_us_num>
+		<action>{{ hist.action }}</action>
+		<value>{{ hist.value|escape }}</value>
+	</history>{% endfor %}
+</openscrum>

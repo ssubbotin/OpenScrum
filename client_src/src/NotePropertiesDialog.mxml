@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" 
+			   xmlns:mx="library://ns.adobe.com/flex/mx" width="600" height="450"
+			   title="Параметры задачи" x="100" y="100" 
+			   close="PopUpManager.removePopUp(this);" borderAlpha="0.75" xmlns:appspotserver="services.appspotserver.*">
+	<s:layout>
+		<s:VerticalLayout/>
+	</s:layout>
+	
+	<fx:Declarations>
+		<s:CallResponder id="getTaskHistoryResult"/>
+		<appspotserver:AppspotServer id="appspotServer" fault="Alert.show(event.fault.faultString + '\n' + event.fault.faultDetail)" showBusyCursor="true"/>
+		<!-- Разместить невизуальные элементы (например, службы или объекты значений) -->
+	</fx:Declarations>
+	
+	<fx:Script>
+		<![CDATA[       
+			import mx.controls.Alert;
+			import mx.controls.Text;
+			import mx.events.FlexEvent;
+			import mx.managers.PopUpManager;
+			
+			// A reference to the TextInput control in which to put the result.
+			public var note:StickyNote;
+			
+			// Event handler for the OK button.
+			private function returnName():void {
+				note.usNumber = usNumber.text;
+				note.usDays = usDays.text;
+				note.text = usText.text;
+				note.sendParametersUpdate();
+				PopUpManager.removePopUp(this);
+			}
+
+			public function loadNote():void
+			{
+				usNumber.text = note.usNumber;
+				usDays.text = note.usDays;
+				usText.text = note.text;
+				inWorkDays.text = note.inWorkDays;
+			}
+
+			protected function history_creationCompleteHandler(event:FlexEvent):void
+			{
+				getTaskHistoryResult.token = appspotServer.getTaskHistory(note.noteID);
+			}
+			
+		]]>
+	</fx:Script>
+
+	<mx:Spacer height="20"/>
+	<s:HGroup width="100%" paddingRight="20">
+		<mx:Label text="Номер ПИ: " width="100" textAlign="right"/>
+		<mx:TextInput id="usNumber" width="100%" text="#0"/>
+	</s:HGroup>
+	<s:HGroup width="100%" paddingRight="20">
+		<mx:Label text="Оценка в днях: " width="100" textAlign="right"/>
+		<mx:TextInput id="usDays" width="100%" text="0" restrict="0-9."/>
+	</s:HGroup>
+	<s:HGroup width="100%" paddingRight="20">
+		<mx:Label text="Days in work: " width="100" textAlign="right"/>
+		<mx:Label id="inWorkDays" width="100%" text="0"/>
+	</s:HGroup>
+	<s:HGroup width="100%" height="100%" paddingRight="20">
+		<mx:Label text="Текст: " width="100" textAlign="right"/>
+		<s:RichEditableText id="usText" width="100%" height="100%" text="Заполните текст" paddingLeft="5" paddingRight="5" paddingBottom="5" paddingTop="5"/>
+	</s:HGroup>
+	<mx:AdvancedDataGrid id="history" designViewDataType="flat" width="100%" height="200" creationComplete="history_creationCompleteHandler(event)" dataProvider="{getTaskHistoryResult.lastResult}">
+		<mx:columns>
+			<mx:AdvancedDataGridColumn headerText="time" dataField="time"/>
+			<mx:AdvancedDataGridColumn headerText="action" dataField="action"/>
+			<mx:AdvancedDataGridColumn headerText="value" dataField="value"/>
+			<mx:AdvancedDataGridColumn headerText="user" dataField="user"/>
+		</mx:columns>
+	</mx:AdvancedDataGrid>
+	
+	<s:HGroup width="100%" textAlign="center">
+		<mx:Spacer width="44%"/>
+		<mx:Button id="okbutton" label="OK"  click="returnName();" textAlign="center"/>
+		<!--<mx:Button label="Cancel" click="PopUpManager.removePopUp(this);"/>-->
+	</s:HGroup>
+	<mx:Spacer height="5"/>
+	
+</s:TitleWindow>

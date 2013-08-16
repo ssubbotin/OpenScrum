@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+                 xmlns:s="library://ns.adobe.com/flex/spark" 
+                 xmlns:mx="library://ns.adobe.com/flex/mx" width="500" height="20" xmlns:local="*">
+        <s:layout>
+                <s:HorizontalLayout paddingLeft="10"/>
+        </s:layout>
+        <fx:Declarations>
+                <!-- Разместить невизуальные элементы (например, службы или объекты значений) -->
+        </fx:Declarations>
+        <s:Label text="назначить:" height="100%" verticalAlign="middle"/>
+        <local:StickyPerson person="MD" background="#80FE1A" rotation="-90" isDocked="true"/>
+        <local:StickyPerson person="Игорь" background="#FB4343" rotation="-90" isDocked="true"/>
+        <local:StickyPerson person="Сергей" background="#798BFC" rotation="-90" isDocked="true"/>
+	    <local:StickyPerson person="Андрей П." background="#0E6275" rotation="-90" isDocked="true"/>
+        <local:StickyPerson person="Иван" background="#a55afa" rotation="-90" isDocked="true"/>
+        <local:StickyPerson person="Пётр" background="#5afae5" rotation="-90" isDocked="true"/>
+        <local:StickyPerson person="Рома" background="#c3fa5a" rotation="-90" isDocked="true"/>
+        <local:StickyPerson person="Дима" background="#f7b33d" rotation="-90" isDocked="true"/>
+        <local:StickyPerson person="Денис" background="#ADD63A" rotation="-90" isDocked="true"/>
+        <local:StickyPerson person="Артём" background="#6F54B8" rotation="-90" isDocked="true"/>
+        <local:StickyPerson person="Миша" background="#e049de" rotation="-90" isDocked="true"/>
+    	<local:StickyPerson person="Тимофей" background="#FAD14B" rotation="-90" isDocked="true"/>
+    	<local:StickyPerson person="Андрей Х." background="#0BB332" rotation="-90" isDocked="true"/>
+    	<local:StickyPerson person="Павел" background="#FA945C" rotation="-90" isDocked="true"/>
+        <local:StickyPerson person="Снят" background="#B0B0B0" rotation="-90" isDocked="true"/>
+	    <local:StickyPerson person="Обсуждение" background="#E0E0E0" rotation="-90" isDocked="true"/>
+</s:Group>

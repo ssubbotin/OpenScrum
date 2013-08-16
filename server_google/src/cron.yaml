@@ -1,0 +1,5 @@
+cron:
+- description: update burndown data job
+  url: /cron/burndown
+  schedule: every 1 hours
+  

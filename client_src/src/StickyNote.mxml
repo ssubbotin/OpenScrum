@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" width="190" height="140" xmlns:local="*">
+<!--
+		 rollOver="doZoom(event)" rollOut="doZoomRollOut(event)" creationComplete="group1_creationCompleteHandler(event)"
+-->
+	<s:layout>
+		<s:VerticalLayout/>
+	</s:layout>
+	<fx:Script>
+		<![CDATA[
+			import flashx.textLayout.formats.Float;
+			
+			import flex.utils.ui.resize.MoveManager;
+			
+			import mx.containers.TitleWindow;
+			import mx.core.DragSource;
+			import mx.core.FlexGlobals;
+			import mx.core.IUIComponent;
+			import mx.events.DragEvent;
+			import mx.events.EffectEvent;
+			import mx.events.FlexEvent;
+			import mx.logging.Log;
+			import mx.managers.DragManager;
+			import mx.managers.PopUpManager;
+			import mx.rpc.events.ResultEvent;
+
+			private var mm:MoveManager;
+			
+			protected function isInReviewOrReadyForReviewStates():Boolean
+			{
+				var quads:Array = [3,6,9,13,14,15];
+				return quads.indexOf(quadId) != -1;
+			}
+			
+			protected function acceptReviewer(name:String):Boolean {
+				return isInReviewOrReadyForReviewStates() &&
+					(personDock.getChildByName(name) == null) &&
+					(reviewerDock.numElements == 0);
+			}
+			
+			protected function acceptAssignee(name:String):Boolean {
+				return  !isInReviewOrReadyForReviewStates() &&
+					(personDock.getChildByName(name) == null) &&
+					(personDock.numElements < 5) &&
+					(reviewerDock.getChildByName(name) == null);					
+			}
+			
+			protected function dragEnterHandler(event:DragEvent):void
+			{
+				if(!isDocked && !FlexGlobals.topLevelApplication.read_only) {
+					if (event.dragSource.hasFormat('personName')) {
+						var draggedName:String = event.dragSource.dataForFormat('personName') as String;
+						if(acceptAssignee(draggedName) || acceptReviewer(draggedName)) {
+							DragManager.acceptDragDrop(event.currentTarget as IUIComponent);
+						}
+					}
+				}
+			}
+			
+			protected function dragDropHandler(event:DragEvent):void
+			{
+				var sp:StickyPerson = new StickyPerson();
+				sp.person = event.dragSource.dataForFormat('personName') as String;
+				sp.background = event.dragSource.dataForFormat('personBackground') as uint;
+				sp.name = sp.person;
+				//sp.rotation = -90;
+				
+				var wasDocked:Boolean = event.dragSource.dataForFormat('personDocked') as Boolean;
+				if(!wasDocked) {
+					var person:StickyPerson = event.dragSource.dataForFormat('personItself') as StickyPerson;
+					var parentGroup:Group = person.parent as Group;
+					parentGroup.removeElement(person);
+					
+					personColor = person.background;
+					personName = person.person;
+					personNoteID = person.parentNoteID;
+					deleteperson.send();
+				}
+				sp.reviewer = isInReviewOrReadyForReviewStates();
+				if(sp.reviewer) {
+					reviewerDock.addElement(sp);
+				} else {
+					personDock.addElement(sp);
+				}
+				sp.parentNoteID = noteID;
+				sp.serverURL = serverURL;
+				sp.sendAddEvent();
+			}
+
+			protected function creationCompleteHandler(event:FlexEvent):void
+			{
+				serverURL = FlexGlobals.topLevelApplication.parameters["serverURL"] as String;
+				sprintID = FlexGlobals.topLevelApplication.parameters["sprintID"] as String;
+				if(!isDocked && !FlexGlobals.topLevelApplication.read_only) {
+					initmm(0);
+				}
+				updateExpired();
+			}
+			
+			protected function updateExpired():void
+			{
+				var days:String = usDays;
+				days = days.replace(/,/g,".");
+				var daysfl:Number = parseFloat(days);
+				
+                imgExpired.visible = isNaN(daysfl) || (parseFloat(inWorkDays)>daysfl);
+			}
+			
+			public function initmm(parentQuadId: int):void {
+				if(mm != null) {
+					mm.removeMoveSupport();
+					quadId = parentQuadId;
+					newX = x;
+					newY = y;
+					movetask.send();
+				}
+				mm = new MoveManager();
+				mm.bringToFrontOnMove = true;
+				var parentGroup:Group = parent as Group;
+				var parentDesk:DeskQuadrant = parentGroup.parentDocument as DeskQuadrant;
+				var rightBound:uint = parentDesk.showLeft?607:657;
+				var bottomBound:uint = parentDesk.showTop?607:677;
+				mm.constrainToBounds = new Rectangle(0,0,rightBound,bottomBound);
+				mm.addMoveSupport(this, draggable, null);
+			}
+
+			protected function mouseDownHandler(event:MouseEvent):void
+			{
+				if(isDocked) {
+					var ds:DragSource = new DragSource();
+					ds.addData(color, 'noteColor');
+					
+					DragManager.doDrag(this, ds, event);
+				}
+			}
+
+			protected function doubleClickHandler(event:MouseEvent):void
+			{
+				var properties:NotePropertiesDialog=NotePropertiesDialog(PopUpManager.createPopUp( this, NotePropertiesDialog , true));
+				properties.okbutton.enabled = !FlexGlobals.topLevelApplication.read_only;
+				//properties.x=event.stageX;
+				//properties.y=event.stageY;
+				properties.note = this;
+				properties.loadNote();
+			}
+
+			public function sendCreationEvent():void {
+				addtask.send();
+			}
+			
+			public function sendParametersUpdate():void {
+				changetask.send();
+				updateExpired();
+			}
+
+			protected function addtask_resultHandler(event:ResultEvent):void
+			{
+			    noteID = addtask.lastResult.valueOf();
+			}
+
+
+			protected function draggable_mouseUpHandler(event:MouseEvent):void
+			{
+				if(!isDocked && !FlexGlobals.topLevelApplication.read_only) {
+					newX = x;
+					newY = y;
+					movetask.send();	
+				}				
+			}
+
+			protected function movetask_resultHandler(event:ResultEvent):void
+			{
+				var result:Object = movetask.lastResult;
+			}
+			
+			private var playingReverse:Boolean = false;
+			
+//			public function doZoom(event:MouseEvent):void {
+//				if(!isDocked && parentApplication.zoomFactor<100 && event.ctrlKey) {
+//					var parentGroup:Group = event.target.parent as Group;
+//					var index:int = parentGroup.getElementIndex(this);
+//					var last:int = parentGroup.numElements - 1;
+//					if (index != last) {
+//						parentGroup.setElementIndex(this, last);
+//					}
+//					playingReverse = false;
+//					zoomNote.play([this]);
+//				}
+//			}
+
+//			public function doZoomRollOut(event:Event):void {
+//				if(!isDocked && parentApplication.zoomFactor<100 && !playingReverse) {
+//					if(scaleX > 1) {
+//						playingReverse = true;
+//						if (zoomNote.isPlaying) {
+//							zoomNote.reverse();
+//						} else 
+//						{
+//							zoomNote.play([this], true);
+//						}
+//					}
+//				}
+//			}
+
+//			protected function group1_creationCompleteHandler(event:FlexEvent):void
+//			{
+//				addEventListener(Event.MOUSE_LEAVE, doZoomRollOut);
+//			}
+
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<!-- Разместить невизуальные элементы (например, службы или объекты значений) -->
+		<fx:String id="text">Заполните текст</fx:String>
+		<fx:String id="usNumber">#0</fx:String>
+		<fx:String id="usDays">0</fx:String>
+		<fx:String id="inWorkDays">0</fx:String>
+		<fx:uint id="color">#FFF58A</fx:uint>
+		<fx:uint id="quadId">0</fx:uint>
+		<fx:String id="noteID">NoID</fx:String>
+		<fx:uint id="newX">0</fx:uint>
+		<fx:uint id="newY">0</fx:uint>
+		<fx:Boolean id="isDocked">false</fx:Boolean>
+		<fx:String id="serverURL">http://localhost</fx:String>
+		<fx:String id="sprintID">NoID</fx:String>
+
+		<fx:String id="personNoteID">0</fx:String>
+		<fx:String id="personName">Без имени</fx:String>
+		<fx:int id="personColor">0</fx:int>
+		
+		<mx:HTTPService id="addtask" url="{serverURL + '/addtask.php'}" result="addtask_resultHandler(event)" method="POST">
+			<mx:request xmlns=""> 
+				<sprint_id>{sprintID}</sprint_id>
+				<quad>{quadId}</quad> 
+				<color>{color}</color>
+				<x>{x}</x>
+				<y>{y}</y>
+				<us_num>{usNumber}</us_num>
+				<us_time>{usDays}</us_time>
+				<us_text>{text}</us_text>				
+			</mx:request>    			
+		</mx:HTTPService>
+		
+		<mx:HTTPService id="movetask" url="{serverURL + '/movetask.php'}" method="POST" result="movetask_resultHandler(event)">
+			<mx:request xmlns="">
+				<id>{noteID}</id>
+				<quad>{quadId}</quad> 
+				<x>{newX}</x>
+				<y>{newY}</y>
+			</mx:request>    			
+		</mx:HTTPService>
+
+		<mx:HTTPService id="changetask" url="{serverURL + '/changetask.php'}" method="POST" >
+			<mx:request xmlns="">
+				<id>{noteID}</id>
+				<us_num>{usNumber}</us_num> 
+				<us_time>{usDays}</us_time>
+				<us_text>{text}</us_text>
+			</mx:request>    			
+		</mx:HTTPService>
+		
+		<mx:HTTPService id="deleteperson" url="{serverURL + '/deleteperson.php'}" method="POST">
+			<mx:request xmlns=""> 
+				<id>{personNoteID}</id> 
+				<name>{personName}</name> 
+				<color>{personColor}</color> 
+			</mx:request>    			
+		</mx:HTTPService>
+        <!--
+		  <s:Scale id="zoomNote" scaleXFrom="1" scaleXTo="{100/parentApplication.zoomFactor}" scaleYFrom="1" scaleYTo="{100/parentApplication.zoomFactor}"/>
+		-->
+	</fx:Declarations>
+
+	<s:VGroup width="100%" height="100%" gap="-150">
+		<s:HGroup depth="2" gap="-30" height="100%" width="100%" creationComplete="creationCompleteHandler(event)" mouseDown="mouseDownHandler(event)">
+			<s:BorderContainer id="draggable" width="140" height="140" contentBackgroundColor="#FFFFFF" backgroundColor="{color}" doubleClick="doubleClickHandler(event)" doubleClickEnabled="true" mouseUp="draggable_mouseUpHandler(event)">
+				<mx:Image id="imgExpired" source="@Embed('/assets/expired.jpg')" width="100%" height="100%" visible="false" alpha="0.3"/>
+				<s:VGroup gap="0" width="100%" height="100%" dragEnter="dragEnterHandler(event)" dragDrop="dragDropHandler(event)">
+					<s:Label text="{usNumber}" fontSize="17" fontWeight="bold" width="100%" paddingLeft="2" paddingTop="2"/>
+					<s:RichText text="{text}" width="100%" height="100%" paddingLeft="10" paddingRight="10" paddingTop="10" paddingBottom="10"/>
+					<s:Label text="{usDays}" fontSize="17" width="100%" textAlign="right" paddingRight="2" paddingBottom="2"/>
+				</s:VGroup>
+			</s:BorderContainer>
+			<s:VGroup gap="3" height="140" verticalAlign="bottom" paddingBottom="30" id="personDock">
+			</s:VGroup>
+		</s:HGroup>
+		<s:HGroup depth="2" width="100%" gap="0">
+			<s:HGroup id="reviewerDock" width="100%" gap="0" horizontalAlign="center" verticalAlign="bottom">
+			</s:HGroup>
+			<mx:Spacer width="50" />
+		</s:HGroup>
+	</s:VGroup>
+</s:Group>
